@@ -57,6 +57,7 @@
         _closeOnSelection = YES;
         _itemHeight = 48.0;
         _separatorHeight = 2.0;
+        _separatorOffset = CGSizeMake(0.0, 0.0);
         _waitUntilAnimationIsComplete = YES;
         
         _textOffset = CGSizeMake(0, 0);
@@ -89,6 +90,7 @@
         _borderWidth = 1.0;
         _borderColor =  [UIColor colorWithRed:28/255.0 green:28/255.0 blue:27/255.0 alpha:1.0];
         _animationDuration = 0.3;
+        _closeAnimationDuration = 0.2;
         _bounce = YES;
         _bounceAnimationDuration = 0.2;
         
@@ -193,9 +195,9 @@
         if (index == self.items.count - 1)
             itemHeight += self.cornerRadius;
         
-        UIView *separatorView = [[UIView alloc] initWithFrame:CGRectMake(0,
-                                                                         index * self.itemHeight + index * self.separatorHeight + 40.0 + navigationBarOffset,
-                                                                         rect.size.width,
+        UIView *separatorView = [[UIView alloc] initWithFrame:CGRectMake(self.separatorOffset.width,
+                                                                         index * self.itemHeight + index * self.separatorHeight + 40.0 + navigationBarOffset + self.separatorOffset.height,
+                                                                         rect.size.width - self.separatorOffset.width,
                                                                          self.separatorHeight)];
         separatorView.backgroundColor = self.separatorColor;
         separatorView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -238,6 +240,10 @@
     [self.containerView addSubview:self.menuWrapperView];
     [view addSubview:self.containerView];
     
+    if ([self.delegate respondsToSelector:@selector(willOpenMenu:)]) {
+        [self.delegate willOpenMenu:self];
+    }
+    
     // Animate appearance
     //
     if (self.bounce) {
@@ -255,6 +261,9 @@
                  self.menuWrapperView.frame = frame;
              } completion:^(BOOL finished) {
                  self.isAnimating = NO;
+                 if ([self.delegate respondsToSelector:@selector(didOpenMenu:)]) {
+                     [self.delegate didOpenMenu:self];
+                 }
              }];
         } else {
             [UIView animateWithDuration:self.animationDuration
@@ -267,6 +276,9 @@
                  self.menuWrapperView.frame = frame;
              } completion:^(BOOL finished) {
                  self.isAnimating = NO;
+                 if ([self.delegate respondsToSelector:@selector(didOpenMenu:)]) {
+                     [self.delegate didOpenMenu:self];
+                 }
              }];
 
         }
@@ -281,6 +293,9 @@
             self.menuWrapperView.frame = frame;
         } completion:^(BOOL finished) {
             self.isAnimating = NO;
+            if ([self.delegate respondsToSelector:@selector(didOpenMenu:)]) {
+                [self.delegate didOpenMenu:self];
+            }
         }];
     }
 }
@@ -314,7 +329,7 @@
     CGFloat navigationBarOffset = self.appearsBehindNavigationBar && self.navigationBar ? 64 : 0;
     
     void (^closeMenu)(void) = ^{
-        [UIView animateWithDuration:self.animationDuration
+        [UIView animateWithDuration:self.closeAnimationDuration
                               delay:0.0
                             options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionCurveEaseInOut
                          animations:^ {
@@ -339,12 +354,18 @@
             if (self.closeCompletionHandler) {
                 self.closeCompletionHandler();
             }
+            if ([self.delegate respondsToSelector:@selector(didCloseMenu:)]) {
+                [self.delegate didCloseMenu:self];
+            }
         }];
         
     };
     
     if (self.closePreparationBlock) {
         self.closePreparationBlock();
+    }
+    if ([self.delegate respondsToSelector:@selector(willCloseMenu:)]) {
+        [self.delegate willCloseMenu:self];
     }
     
     if (self.bounce) {

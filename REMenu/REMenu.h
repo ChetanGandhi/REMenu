@@ -29,6 +29,7 @@
 #import "REMenuItem.h"
 #import "REMenuContainerView.h"
 
+@class REMenu;
 @class REMenuItem;
 
 typedef NS_ENUM(NSInteger, REMenuImageAlignment) {
@@ -40,6 +41,15 @@ typedef NS_ENUM(NSInteger, REMenuLiveBackgroundStyle) {
     REMenuLiveBackgroundStyleLight,
     REMenuLiveBackgroundStyleDark
 };
+
+@protocol REMenuDelegate <NSObject>
+@optional
+-(void)willOpenMenu:(REMenu *)menu;
+-(void)didOpenMenu:(REMenu *)menu;
+-(void)willCloseMenu:(REMenu *)menu;
+-(void)didCloseMenu:(REMenu *)menu;
+
+@end
 
 @interface REMenu : NSObject 
 
@@ -53,6 +63,7 @@ typedef NS_ENUM(NSInteger, REMenuLiveBackgroundStyle) {
 @property (copy, readwrite, nonatomic) void (^closeCompletionHandler)(void);
 @property (copy, readwrite, nonatomic) void (^closePreparationBlock)(void);
 @property (assign, readwrite, nonatomic) BOOL closeOnSelection;
+@property (weak, readwrite, nonatomic) id <REMenuDelegate> delegate;
 
 // Style
 //
@@ -66,6 +77,7 @@ typedef NS_ENUM(NSInteger, REMenuLiveBackgroundStyle) {
 @property (strong, readwrite, nonatomic) UIColor *backgroundColor;
 @property (strong, readwrite, nonatomic) UIColor *separatorColor;
 @property (assign, readwrite, nonatomic) CGFloat separatorHeight;
+@property (assign, readwrite, nonatomic) CGSize separatorOffset;
 @property (strong, readwrite, nonatomic) UIFont *font;
 @property (strong, readwrite, nonatomic) UIColor *textColor;
 @property (strong, readwrite, nonatomic) UIColor *textShadowColor;
@@ -93,6 +105,7 @@ typedef NS_ENUM(NSInteger, REMenuLiveBackgroundStyle) {
 @property (assign, readwrite, nonatomic) CGSize subtitleHighlightedTextShadowOffset;
 @property (assign, readwrite, nonatomic) NSTextAlignment subtitleTextAlignment;
 @property (assign, readwrite, nonatomic) NSTimeInterval animationDuration;
+@property (assign, readwrite, nonatomic) NSTimeInterval closeAnimationDuration;
 @property (assign, readwrite, nonatomic) NSTimeInterval bounceAnimationDuration;
 @property (assign, readwrite, nonatomic) BOOL appearsBehindNavigationBar;
 @property (assign, readwrite, nonatomic) BOOL bounce;
